@@ -40,4 +40,10 @@ export const api = {
 
   // Reportes
   reporte: (nombre) => http.get(`/reportes/${nombre}`).then((r) => r.data),
+
+  // Alumnos (destinatarios)
+  listarAlumnos: () => http.get("/alumnos").then((r) => r.data),
+  crearAlumno: (datos) => http.post("/alumnos", datos).then((r) => r.data),
+  actualizarAlumno: (id, datos) => http.put(`/alumnos/${id}`, datos).then((r) => r.data),
+  eliminarAlumno: (id) => http.delete(`/alumnos/${id}`).then((r) => r.data),
 };

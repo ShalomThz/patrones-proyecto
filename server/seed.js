@@ -2,6 +2,7 @@ import "dotenv/config";
 import conexionDB from "./src/config/db.js";
 import Actividad from "./src/models/Actividad.js";
 import Notificacion from "./src/models/Notificacion.js";
+import Alumno from "./src/models/Alumno.js";
 import { registrarActividad } from "./src/services/actividadService.js";
 
 /** Carga datos de ejemplo para probar la aplicacion. */
@@ -9,6 +10,16 @@ async function seed() {
   await conexionDB.conectar();
   await Actividad.deleteMany({});
   await Notificacion.deleteMany({});
+  await Alumno.deleteMany({});
+
+  // Destinatarios: a los alumnos activos les llegan correo/interno.
+  const alumnos = [
+    { nombre: "Ana Lopez", correo: "ana.lopez@escuela.edu", activo: true },
+    { nombre: "Bruno Diaz", correo: "bruno.diaz@escuela.edu", activo: true },
+    { nombre: "Carla Ruiz", correo: "carla.ruiz@escuela.edu", activo: false },
+  ];
+  await Alumno.insertMany(alumnos);
+  console.log(`Alumnos creados: ${alumnos.length}`);
 
   const ejemplos = [
     { tipo: "tarea", nombre: "Tarea de Algoritmos", descripcion: "Resolver ejercicios 1-10", fecha: "2026-06-10", prioridad: "media" },

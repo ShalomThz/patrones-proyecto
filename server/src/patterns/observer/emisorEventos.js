@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { enviarNotificacion } from "../strategy/estrategiasNotificacion.js";
+import { entregar } from "../../services/entregaService.js";
 
 /**
  * PATRON 4: OBSERVER (Comportamiento)
@@ -31,17 +32,14 @@ async function registrarBitacora({ actividad, estadoAnterior }) {
   });
 }
 
-// Observador 3: Alumno -> recibe un mensaje interno + un toast en pantalla.
-async function notificarAlumno({ actividad, estadoAnterior }) {
-  await enviarNotificacion("interno", {
-    mensaje: `[Alumno] "${actividad.nombre}" ahora esta en estado "${actividad.estado}".`,
-    destinatario: "alumno",
-    actividad: actividad._id,
-  });
-  await enviarNotificacion("pantalla", {
-    mensaje: `"${actividad.nombre}" -> ${actividad.estado}`,
-    destinatario: "alumno",
-    actividad: actividad._id,
+// Observador 3: Alumnos -> entrega por los canales configurados en la actividad
+// (correo/interno a cada alumno activo, pantalla como aviso general).
+async function notificarAlumnos({ actividad }) {
+  const canales = actividad.canales?.length ? actividad.canales : ["pantalla"];
+  await entregar({
+    canales,
+    mensaje: `"${actividad.nombre}" ahora esta en estado "${actividad.estado}".`,
+    actividad,
   });
 }
 
@@ -51,7 +49,7 @@ emisor.on("estadoCambiado", (payload) => {
   Promise.allSettled([
     notificarDocente(payload),
     registrarBitacora(payload),
-    notificarAlumno(payload),
+    notificarAlumnos(payload),
   ]).then((resultados) => {
     resultados
       .filter((r) => r.status === "rejected")

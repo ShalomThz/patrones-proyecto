@@ -6,6 +6,7 @@ import Toasts from "./components/Toasts.jsx";
 import ActividadesView from "./pages/ActividadesView.jsx";
 import TableroView from "./pages/TableroView.jsx";
 import CalendarioView from "./pages/CalendarioView.jsx";
+import AlumnosView from "./pages/AlumnosView.jsx";
 import ReportesView from "./pages/ReportesView.jsx";
 import NotificacionesView from "./pages/NotificacionesView.jsx";
 
@@ -21,6 +22,10 @@ const VISTAS = {
   calendario: {
     titulo: "Calendario",
     subtitulo: "Actividades organizadas por fecha límite",
+  },
+  alumnos: {
+    titulo: "Alumnos",
+    subtitulo: "Gestiona los destinatarios de las notificaciones",
   },
   reportes: {
     titulo: "Reportes",
@@ -51,6 +56,7 @@ export default function App() {
           {vista === "actividades" && <ActividadesView meta={meta} />}
           {vista === "tablero" && <TableroView meta={meta} />}
           {vista === "calendario" && <CalendarioView />}
+          {vista === "alumnos" && <AlumnosView />}
           {vista === "reportes" && <ReportesView />}
           {vista === "bitacora" && <NotificacionesView />}
         </main>

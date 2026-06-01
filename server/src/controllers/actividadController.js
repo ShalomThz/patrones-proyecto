@@ -1,5 +1,6 @@
 import * as service from "../services/actividadService.js";
 import { PRIORIDADES } from "../models/Actividad.js";
+import { CANALES_NOTIFICABLES } from "../models/Notificacion.js";
 import { TIPOS_DISPONIBLES } from "../patterns/factory/actividadFactory.js";
 import { obtenerEstado, ESTADOS } from "../patterns/state/estados.js";
 
@@ -13,6 +14,7 @@ export function meta(req, res) {
     tipos: TIPOS_DISPONIBLES,
     estados: Object.values(ESTADOS),
     prioridades: PRIORIDADES,
+    canales: CANALES_NOTIFICABLES,
     transiciones,
   });
 }

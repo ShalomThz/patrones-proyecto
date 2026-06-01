@@ -3,6 +3,10 @@ import mongoose from "mongoose";
 // Canales/mecanismos de envio soportados (todos simulados en la interfaz web).
 export const CANALES = ["pantalla", "correo", "bitacora", "interno"];
 
+// Canales que el docente puede elegir por actividad. La "bitacora" se omite
+// porque es un registro automatico del sistema (no se configura).
+export const CANALES_NOTIFICABLES = ["pantalla", "correo", "interno"];
+
 const notificacionSchema = new mongoose.Schema(
   {
     mensaje: { type: String, required: true },

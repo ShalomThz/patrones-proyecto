@@ -6,7 +6,7 @@ import { ESTADOS } from "../state/estados.js";
  * recordatorio, dias de anticipacion para avisar, etc.).
  */
 class Actividad {
-  constructor({ nombre, descripcion = "", fecha, prioridad = "media", estado = ESTADOS.PENDIENTE }) {
+  constructor({ nombre, descripcion = "", fecha, prioridad = "media", estado = ESTADOS.PENDIENTE, canales }) {
     if (!nombre) throw new Error("La actividad requiere un nombre");
     if (!fecha) throw new Error("La actividad requiere una fecha");
     this.nombre = nombre;
@@ -14,6 +14,8 @@ class Actividad {
     this.fecha = new Date(fecha);
     this.prioridad = prioridad;
     this.estado = estado;
+    // Canales elegidos para notificar; si no se indican, se usan los del modelo.
+    this.canales = Array.isArray(canales) && canales.length ? canales : undefined;
   }
 
   get tipo() {
@@ -27,7 +29,7 @@ class Actividad {
 
   // Representacion lista para persistir en Mongoose.
   aDocumento() {
-    return {
+    const doc = {
       nombre: this.nombre,
       descripcion: this.descripcion,
       fecha: this.fecha,
@@ -35,6 +37,8 @@ class Actividad {
       prioridad: this.prioridad,
       estado: this.estado,
     };
+    if (this.canales) doc.canales = this.canales;
+    return doc;
   }
 }
 

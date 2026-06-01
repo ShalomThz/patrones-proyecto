@@ -2,7 +2,7 @@ import Actividad from "../models/Actividad.js";
 import { crearActividad } from "../patterns/factory/actividadFactory.js";
 import { validarTransicion } from "../patterns/state/estados.js";
 import { emitirCambioEstado } from "../patterns/observer/emisorEventos.js";
-import { enviarNotificacion } from "../patterns/strategy/estrategiasNotificacion.js";
+import { entregar } from "./entregaService.js";
 
 /**
  * Capa de servicios: orquesta los patrones de diseno.
@@ -27,11 +27,12 @@ export async function registrarActividad(datos) {
   const actividadDominio = crearActividad(datos.tipo, datos);
   const creada = await Actividad.create(actividadDominio.aDocumento());
 
-  // Recordatorio inicial usando el mensaje propio del tipo (Factory + Strategy).
-  await enviarNotificacion("pantalla", {
+  // Recordatorio inicial usando el mensaje propio del tipo (Factory + Strategy),
+  // entregado por los canales configurados a cada alumno activo.
+  await entregar({
+    canales: creada.canales,
     mensaje: actividadDominio.mensajeRecordatorio(),
-    destinatario: "alumno",
-    actividad: creada._id,
+    actividad: creada,
   });
   return creada;
 }
@@ -78,9 +79,6 @@ export async function enviarRecordatorio(id, canal) {
   const mensaje = `Recordatorio: "${actividad.nombre}" (${actividad.tipo}) vence el ${new Date(
     actividad.fecha
   ).toLocaleDateString()}.`;
-  return enviarNotificacion(canal, {
-    mensaje,
-    destinatario: "alumno",
-    actividad: actividad._id,
-  });
+  const enviados = await entregar({ canales: [canal], mensaje, actividad });
+  return { enviados: enviados.length, canal, mensaje };
 }

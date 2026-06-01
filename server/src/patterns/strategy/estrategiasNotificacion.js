@@ -1,4 +1,5 @@
 import Notificacion from "../../models/Notificacion.js";
+import { enviarCorreoReal } from "../../config/resend.js";
 
 /**
  * PATRON 3: STRATEGY (Comportamiento)
@@ -23,9 +24,15 @@ const estrategias = {
     return persistir({ ...payload, canal: "pantalla" });
   },
 
-  // Correo electronico simulado (registro visual en la interfaz).
+  // Correo electronico: envio real con Resend cuando el destinatario es un
+  // correo valido; en caso contrario queda como registro simulado.
   correo: async (payload) => {
     console.log(`[CORREO -> ${payload.destinatario || "general"}]`, payload.mensaje);
+    await enviarCorreoReal({
+      destinatario: payload.destinatario,
+      mensaje: payload.mensaje,
+      asunto: payload.asunto,
+    });
     return persistir({ ...payload, canal: "correo" });
   },
 

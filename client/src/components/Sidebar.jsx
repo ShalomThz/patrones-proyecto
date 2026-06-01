@@ -1,10 +1,11 @@
-import { LayoutDashboard, Columns3, CalendarDays, BarChart3, ScrollText, GraduationCap } from "lucide-react";
+import { LayoutDashboard, Columns3, CalendarDays, BarChart3, ScrollText, GraduationCap, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { id: "actividades", label: "Actividades", icon: LayoutDashboard },
   { id: "tablero", label: "Tablero", icon: Columns3 },
   { id: "calendario", label: "Calendario", icon: CalendarDays },
+  { id: "alumnos", label: "Alumnos", icon: Users },
   { id: "reportes", label: "Reportes", icon: BarChart3 },
   { id: "bitacora", label: "Notificaciones", icon: ScrollText },
 ];

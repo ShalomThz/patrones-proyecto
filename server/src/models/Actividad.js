@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ESTADOS } from "../patterns/state/estados.js";
+import { CANALES_NOTIFICABLES } from "./Notificacion.js";
 
 export const TIPOS_ACTIVIDAD = ["tarea", "examen", "proyecto", "practica"];
 export const PRIORIDADES = ["baja", "media", "alta", "critica"];
@@ -15,6 +16,12 @@ const actividadSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(ESTADOS),
       default: ESTADOS.PENDIENTE,
+    },
+    // Canales por los que se notifica esta actividad (Strategy elegible).
+    canales: {
+      type: [String],
+      enum: CANALES_NOTIFICABLES,
+      default: ["pantalla", "interno"],
     },
   },
   { timestamps: true }

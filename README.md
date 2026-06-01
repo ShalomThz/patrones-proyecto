@@ -29,6 +29,7 @@ de diseño GoF** para mejorar la reutilización, organización y mantenibilidad.
 | Iconografía | lucide-react | Íconos vectoriales (sin emojis) |
 | Cliente HTTP | axios | Consumo de la API REST |
 | Backend | Node.js + Express.js | API REST para lógica y datos |
+| Correo | Resend | Envío de correos reales (canal `correo`) |
 | Base de datos | MongoDB (Mongoose) | Almacenamiento de actividades y notificaciones |
 | Control de versiones | Git + GitHub | Historial del proyecto |
 
@@ -54,6 +55,54 @@ Al **cambiar el estado** de una actividad (`PATCH /api/actividades/:id/estado`):
 3. Cada observador usa **Strategy** para enviar por su canal (correo / bitácora / interno / pantalla).
 4. El frontend muestra los toasts (Observer vía React Context) y la **Decorator** realza las tarjetas de alta prioridad.
 
+### ¿A quién y cómo llegan las notificaciones?
+El docente controla los destinatarios y los mecanismos de envío:
+
+- **A quién (destinatarios):** en la vista **Alumnos** el docente registra a sus
+  alumnos (nombre + correo) y los marca como *activos/inactivos*. Solo los
+  **alumnos activos** reciben las notificaciones individuales.
+- **Cómo (canales):** al crear una actividad se eligen sus **canales de
+  notificación**. Cada canal es una estrategia (patrón **Strategy**):
+  - `correo` → **correo real** vía Resend a cada alumno activo (a su correo).
+  - `mensaje interno` → se entrega a cada alumno activo.
+  - `pantalla` → un aviso general (toast) en el panel del docente.
+  - `bitácora` → registro **automático** del sistema en cada cambio de estado (no se configura).
+
+La capa de entrega (`server/src/services/entregaService.js`) resuelve *a quién*
+va cada canal y delega el *cómo* a las estrategias. El canal `correo` usa
+**Resend** (`server/src/config/resend.js`): si hay `RESEND_API_KEY` envía
+correos reales y si no, lo simula. Gracias al patrón **Strategy**, esto demuestra
+que pasar de "correo simulado" a correo real no afecta al Observer, los servicios
+ni la interfaz.
+
+### Configuración del correo (Resend)
+
+El canal `correo` envía correos reales con **Resend** (`server/src/config/resend.js`).
+Su comportamiento depende de la configuración:
+
+| Situación | Resultado |
+|-----------|-----------|
+| Sin `RESEND_API_KEY` en `.env` | El correo se **simula** (se registra/persiste, pero no se envía). La app funciona igual. |
+| Con `RESEND_API_KEY` y remitente de pruebas (`onboarding@resend.dev`) | Solo se entrega a la **dirección de tu propia cuenta de Resend**; al resto de alumnos Resend lo rechaza (se registra el error, sin romper el flujo). |
+| Con `RESEND_API_KEY` y un **dominio verificado** en `RESEND_FROM` | Se entrega a **cualquier alumno activo**. |
+
+**Limitación del modo prueba.** Con `onboarding@resend.dev`, Resend devuelve:
+*"You can only send testing emails to your own email address"*. Es una restricción
+de Resend (no un error del proyecto); el código la captura y continúa con las
+demás notificaciones.
+
+**Para enviar a todos los alumnos:**
+1. Verifica un dominio en [resend.com/domains](https://resend.com/domains).
+2. En `server/.env` ajusta el remitente a ese dominio:
+   ```bash
+   RESEND_FROM=Académico <noreply@tudominio.com>
+   ```
+3. Reinicia el backend. Los correos llegarán a cada alumno activo.
+
+> Robustez: un fallo de correo (clave inválida, límite de Resend, etc.) **nunca
+> interrumpe** el resto de notificaciones; se registra en consola y la
+> notificación se guarda de todos modos.
+
 ---
 
 ## Arquitectura y estructura de carpetas
@@ -77,10 +126,10 @@ proyecto-patrones/
 └── server/                     # Backend Node.js + Express
     ├── src/
     │   ├── config/db.js        # Singleton (conexión MongoDB)
-    │   ├── models/             # Modelos Mongoose (Actividad, Notificacion)
+    │   ├── models/             # Modelos Mongoose (Actividad, Notificacion, Alumno)
     │   ├── routes/             # Endpoints REST (wiring)
     │   ├── controllers/        # Manejan req/res y delegan a services
-    │   ├── services/           # Lógica de negocio + reportes (orquesta patrones)
+    │   ├── services/           # Lógica de negocio, reportes y entrega (orquesta patrones)
     │   ├── patterns/
     │   │   ├── factory/        # Factory Method + clases concretas
     │   │   ├── state/          # Patrón State (estados y transiciones)
@@ -97,13 +146,14 @@ proyecto-patrones/
 
 Dashboard con **sidebar** de navegación, **topbar** y un **bucket de notificaciones**
 (campana con contador de pendientes que abre un panel para marcarlas como leídas).
-Incluye cinco vistas:
+Incluye seis vistas:
 
 | Vista | Descripción |
 |-------|-------------|
 | **Actividades** | Tarjetas con filtro por estado y alta mediante un modal (*Nueva actividad*) |
 | **Tablero** | Kanban con columnas por estado y **arrastrar-y-soltar** para cambiar de estado (valida la transición con el patrón State) |
 | **Calendario** | Cuadrícula mensual que ubica cada actividad en su fecha límite |
+| **Alumnos** | Gestión de destinatarios: alta de alumnos (nombre y correo), activar/desactivar y eliminar |
 | **Reportes** | Métricas (total, pendientes, finalizadas, canceladas) y desglose por prioridad |
 | **Notificaciones** | Bitácora de eventos filtrable por canal de envío |
 
@@ -159,6 +209,8 @@ cd client && cp .env.example .env      # define VITE_API_URL solo si NO usas el 
 |----------|-------|-------------|
 | `MONGO_URI` | `server/.env` | Cadena de conexión a MongoDB |
 | `PORT` | `server/.env` | Puerto del backend (por defecto `4000`) |
+| `RESEND_API_KEY` | `server/.env` | API key de [Resend](https://resend.com) para enviar correos reales. Si se omite, el canal `correo` solo se simula |
+| `RESEND_FROM` | `server/.env` | Remitente (dominio verificado en Resend). Por defecto usa el de pruebas `onboarding@resend.dev` |
 | `VITE_API_URL` | `client/.env` | URL base de la API. Vacía → usa `/api` (proxy de Vite). En producción apunta al backend, p. ej. `https://mi-dominio.com/api` |
 
 ### 3. (Opcional) Cargar datos de ejemplo
@@ -203,7 +255,7 @@ Todas las respuestas son JSON. Las rutas devuelven `GET /api/health` →
 ### Actividades
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/actividades/meta` | Tipos, estados, prioridades y transiciones válidas |
+| GET | `/actividades/meta` | Tipos, estados, prioridades, canales y transiciones válidas |
 | GET | `/actividades?estado=&tipo=&prioridad=` | Listar (con filtros) |
 | GET | `/actividades/:id` | Obtener una |
 | POST | `/actividades` | Registrar (usa Factory Method) |
@@ -211,6 +263,14 @@ Todas las respuestas son JSON. Las rutas devuelven `GET /api/health` →
 | PATCH | `/actividades/:id/estado` | Cambiar estado (State + Observer) |
 | POST | `/actividades/:id/recordar` | Enviar recordatorio por un canal (Strategy) |
 | DELETE | `/actividades/:id` | Eliminar |
+
+### Alumnos (destinatarios)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/alumnos` | Listar destinatarios |
+| POST | `/alumnos` | Registrar (`{ nombre, correo, activo? }`) |
+| PUT | `/alumnos/:id` | Actualizar (incluye activar/desactivar) |
+| DELETE | `/alumnos/:id` | Eliminar |
 
 ### Notificaciones
 | Método | Ruta | Descripción |
