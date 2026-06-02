@@ -1,3 +1,10 @@
+# Integrantes del equipo
+
+Tellez Hernandez Joel Shalom
+Hernández García Jair Betuel
+Enriquez Ambrosio Maria Cristina
+Peralta López Denis
+
 # Gestión de Notificaciones y Recordatorios Académicos
 
 Aplicación web **full-stack (MERN)** para que un docente registre actividades
@@ -10,6 +17,7 @@ de diseño GoF** para mejorar la reutilización, organización y mantenibilidad.
 ---
 
 ## Tabla de contenidos
+
 - [Stack tecnológico](#stack-tecnológico)
 - [Patrones de diseño implementados](#patrones-de-diseño-implementados)
 - [Arquitectura y estructura de carpetas](#arquitectura-y-estructura-de-carpetas)
@@ -22,44 +30,47 @@ de diseño GoF** para mejorar la reutilización, organización y mantenibilidad.
 
 ## Stack tecnológico
 
-| Capa | Tecnología | Descripción |
-|------|-----------|-------------|
-| Frontend | React.js (Vite) | Interfaz con componentes reutilizables |
-| UI / Estilos | Tailwind CSS + shadcn/ui (Radix UI) | Componentes accesibles y diseño responsivo |
-| Iconografía | lucide-react | Íconos vectoriales (sin emojis) |
-| Cliente HTTP | axios | Consumo de la API REST |
-| Backend | Node.js + Express.js | API REST para lógica y datos |
-| Correo | Resend | Envío de correos reales (canal `correo`) |
-| Base de datos | MongoDB (Mongoose) | Almacenamiento de actividades y notificaciones |
-| Control de versiones | Git + GitHub | Historial del proyecto |
+| Capa                 | Tecnología                          | Descripción                                                        |
+| -------------------- | ----------------------------------- | ------------------------------------------------------------------ |
+| Frontend             | React.js (Vite)                     | Interfaz con componentes reuHernández García Jair Betueltilizables |
+| UI / Estilos         | Tailwind CSS + shadcn/ui (Radix UI) | Componentes accesibles y diseño responsivo                         |
+| Iconografía          | lucide-react                        | Íconos vectoriales (sin emojis)                                    |
+| Cliente HTTP         | axios                               | Consumo de la API REST                                             |
+| Backend              | Node.js + Express.js                | API REST para lógica y datos                                       |
+| Correo               | Resend                              | Envío de correos reales (canal `correo`)                           |
+| Base de datos        | MongoDB (Mongoose)                  | Almacenamiento de actividades y notificaciones                     |
+| Control de versiones | Git + GitHub                        | Historial del proyecto                                             |
 
 ---
 
 ## Patrones de diseño implementados
 
-| # | Patrón | Tipo | Dónde | Archivo |
-|---|--------|------|-------|---------|
-| 1 | **Singleton** | Creacional | Conexión única a MongoDB | `server/src/config/db.js` |
-| 2 | **Factory Method** | Creacional | Creación de actividades según su tipo | `server/src/patterns/factory/actividadFactory.js` |
-| 3 | **State** | Comportamiento | Transiciones válidas de estado de la actividad | `server/src/patterns/state/estados.js` |
-| 4 | **Observer** | Comportamiento | Notificar a Docente, Bitácora y Alumno al cambiar de estado | `server/src/patterns/observer/emisorEventos.js` |
-| 5 | **Strategy** | Comportamiento | Mecanismo de envío de notificación (pantalla, correo, bitácora, interno) | `server/src/patterns/strategy/estrategiasNotificacion.js` |
-| 6 | **Decorator** | Estructural | HOC de React que realza la tarjeta según prioridad | `client/src/utils/decoradores.jsx` |
+| #   | Patrón             | Tipo           | Dónde                                                                    | Archivo                                                   |
+| --- | ------------------ | -------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| 1   | **Singleton**      | Creacional     | Conexión única a MongoDB                                                 | `server/src/config/db.js`                                 |
+| 2   | **Factory Method** | Creacional     | Creación de actividades según su tipo                                    | `server/src/patterns/factory/actividadFactory.js`         |
+| 3   | **State**          | Comportamiento | Transiciones válidas de estado de la actividad                           | `server/src/patterns/state/estados.js`                    |
+| 4   | **Observer**       | Comportamiento | Notificar a Docente, Bitácora y Alumno al cambiar de estado              | `server/src/patterns/observer/emisorEventos.js`           |
+| 5   | **Strategy**       | Comportamiento | Mecanismo de envío de notificación (pantalla, correo, bitácora, interno) | `server/src/patterns/strategy/estrategiasNotificacion.js` |
+| 6   | **Decorator**      | Estructural    | HOC de React que realza la tarjeta según prioridad                       | `client/src/utils/decoradores.jsx`                        |
 
 Cada patrón está comentado en su archivo con la cabecera `PATRON N: ...`.
 
 ### Cómo colaboran los patrones
+
 Al **cambiar el estado** de una actividad (`PATCH /api/actividades/:id/estado`):
+
 1. **State** valida que la transición sea permitida (p. ej. `Finalizada` es terminal).
 2. **Observer** emite el evento `estadoCambiado` y notifica a 3 observadores.
 3. Cada observador usa **Strategy** para enviar por su canal (correo / bitácora / interno / pantalla).
 4. El frontend muestra los toasts (Observer vía React Context) y la **Decorator** realza las tarjetas de alta prioridad.
 
 ### ¿A quién y cómo llegan las notificaciones?
+
 El docente controla los destinatarios y los mecanismos de envío:
 
 - **A quién (destinatarios):** en la vista **Alumnos** el docente registra a sus
-  alumnos (nombre + correo) y los marca como *activos/inactivos*. Solo los
+  alumnos (nombre + correo) y los marca como _activos/inactivos_. Solo los
   **alumnos activos** reciben las notificaciones individuales.
 - **Cómo (canales):** al crear una actividad se eligen sus **canales de
   notificación**. Cada canal es una estrategia (patrón **Strategy**):
@@ -68,8 +79,8 @@ El docente controla los destinatarios y los mecanismos de envío:
   - `pantalla` → un aviso general (toast) en el panel del docente.
   - `bitácora` → registro **automático** del sistema en cada cambio de estado (no se configura).
 
-La capa de entrega (`server/src/services/entregaService.js`) resuelve *a quién*
-va cada canal y delega el *cómo* a las estrategias. El canal `correo` usa
+La capa de entrega (`server/src/services/entregaService.js`) resuelve _a quién_
+va cada canal y delega el _cómo_ a las estrategias. El canal `correo` usa
 **Resend** (`server/src/config/resend.js`): si hay `RESEND_API_KEY` envía
 correos reales y si no, lo simula. Gracias al patrón **Strategy**, esto demuestra
 que pasar de "correo simulado" a correo real no afecta al Observer, los servicios
@@ -80,18 +91,19 @@ ni la interfaz.
 El canal `correo` envía correos reales con **Resend** (`server/src/config/resend.js`).
 Su comportamiento depende de la configuración:
 
-| Situación | Resultado |
-|-----------|-----------|
-| Sin `RESEND_API_KEY` en `.env` | El correo se **simula** (se registra/persiste, pero no se envía). La app funciona igual. |
+| Situación                                                             | Resultado                                                                                                                                            |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sin `RESEND_API_KEY` en `.env`                                        | El correo se **simula** (se registra/persiste, pero no se envía). La app funciona igual.                                                             |
 | Con `RESEND_API_KEY` y remitente de pruebas (`onboarding@resend.dev`) | Solo se entrega a la **dirección de tu propia cuenta de Resend**; al resto de alumnos Resend lo rechaza (se registra el error, sin romper el flujo). |
-| Con `RESEND_API_KEY` y un **dominio verificado** en `RESEND_FROM` | Se entrega a **cualquier alumno activo**. |
+| Con `RESEND_API_KEY` y un **dominio verificado** en `RESEND_FROM`     | Se entrega a **cualquier alumno activo**.                                                                                                            |
 
 **Limitación del modo prueba.** Con `onboarding@resend.dev`, Resend devuelve:
-*"You can only send testing emails to your own email address"*. Es una restricción
+_"You can only send testing emails to your own email address"_. Es una restricción
 de Resend (no un error del proyecto); el código la captura y continúa con las
 demás notificaciones.
 
 **Para enviar a todos los alumnos:**
+
 1. Verifica un dominio en [resend.com/domains](https://resend.com/domains).
 2. En `server/.env` ajusta el remitente a ese dominio:
    ```bash
@@ -148,14 +160,14 @@ Dashboard con **sidebar** de navegación, **topbar** y un **bucket de notificaci
 (campana con contador de pendientes que abre un panel para marcarlas como leídas).
 Incluye seis vistas:
 
-| Vista | Descripción |
-|-------|-------------|
-| **Actividades** | Tarjetas con filtro por estado y alta mediante un modal (*Nueva actividad*) |
-| **Tablero** | Kanban con columnas por estado y **arrastrar-y-soltar** para cambiar de estado (valida la transición con el patrón State) |
-| **Calendario** | Cuadrícula mensual que ubica cada actividad en su fecha límite |
-| **Alumnos** | Gestión de destinatarios: alta de alumnos (nombre y correo), activar/desactivar y eliminar |
-| **Reportes** | Métricas (total, pendientes, finalizadas, canceladas) y desglose por prioridad |
-| **Notificaciones** | Bitácora de eventos filtrable por canal de envío |
+| Vista              | Descripción                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| **Actividades**    | Tarjetas con filtro por estado y alta mediante un modal (_Nueva actividad_)                                               |
+| **Tablero**        | Kanban con columnas por estado y **arrastrar-y-soltar** para cambiar de estado (valida la transición con el patrón State) |
+| **Calendario**     | Cuadrícula mensual que ubica cada actividad en su fecha límite                                                            |
+| **Alumnos**        | Gestión de destinatarios: alta de alumnos (nombre y correo), activar/desactivar y eliminar                                |
+| **Reportes**       | Métricas (total, pendientes, finalizadas, canceladas) y desglose por prioridad                                            |
+| **Notificaciones** | Bitácora de eventos filtrable por canal de envío                                                                          |
 
 La UI usa **shadcn/ui** (componentes sobre Radix UI) en `client/src/components/ui/` e
 íconos de **lucide-react**.
@@ -165,6 +177,7 @@ La UI usa **shadcn/ui** (componentes sobre Radix UI) en `client/src/components/u
 ## Cómo ejecutar el proyecto
 
 ### Inicio rápido (TL;DR)
+
 ```bash
 # 1. Clonar e instalar
 git clone <url-del-repo> && cd proyecto-patrones
@@ -180,15 +193,18 @@ npm run seed
 npm run server     # Terminal 1 → http://localhost:4000
 npm run client     # Terminal 2 → http://localhost:5173
 ```
+
 Luego abre **http://localhost:5173** en el navegador.
 
 ### Requisitos
+
 - Node.js 18+
 - MongoDB en ejecución local (`mongodb://127.0.0.1:27017`) o una URI propia.
-  Arráncalo con `sudo systemctl start mongod` (Linux), la app *MongoDB* (macOS/Windows)
+  Arráncalo con `sudo systemctl start mongod` (Linux), la app _MongoDB_ (macOS/Windows)
   o `docker run -d -p 27017:27017 mongo`.
 
 ### 1. Instalar dependencias
+
 ```bash
 npm run install:all
 # o por separado:
@@ -197,6 +213,7 @@ npm run install:all
 ```
 
 ### 2. Configurar variables de entorno
+
 ```bash
 # Backend
 cd server && cp .env.example .env      # ajusta MONGO_URI / PORT si es necesario
@@ -205,40 +222,46 @@ cd server && cp .env.example .env      # ajusta MONGO_URI / PORT si es necesario
 cd client && cp .env.example .env      # define VITE_API_URL solo si NO usas el proxy
 ```
 
-| Variable | Dónde | Descripción |
-|----------|-------|-------------|
-| `MONGO_URI` | `server/.env` | Cadena de conexión a MongoDB |
-| `PORT` | `server/.env` | Puerto del backend (por defecto `4000`) |
-| `RESEND_API_KEY` | `server/.env` | API key de [Resend](https://resend.com) para enviar correos reales. Si se omite, el canal `correo` solo se simula |
-| `RESEND_FROM` | `server/.env` | Remitente (dominio verificado en Resend). Por defecto usa el de pruebas `onboarding@resend.dev` |
-| `VITE_API_URL` | `client/.env` | URL base de la API. Vacía → usa `/api` (proxy de Vite). En producción apunta al backend, p. ej. `https://mi-dominio.com/api` |
+| Variable         | Dónde         | Descripción                                                                                                                  |
+| ---------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `MONGO_URI`      | `server/.env` | Cadena de conexión a MongoDB                                                                                                 |
+| `PORT`           | `server/.env` | Puerto del backend (por defecto `4000`)                                                                                      |
+| `RESEND_API_KEY` | `server/.env` | API key de [Resend](https://resend.com) para enviar correos reales. Si se omite, el canal `correo` solo se simula            |
+| `RESEND_FROM`    | `server/.env` | Remitente (dominio verificado en Resend). Por defecto usa el de pruebas `onboarding@resend.dev`                              |
+| `VITE_API_URL`   | `client/.env` | URL base de la API. Vacía → usa `/api` (proxy de Vite). En producción apunta al backend, p. ej. `https://mi-dominio.com/api` |
 
 ### 3. (Opcional) Cargar datos de ejemplo
+
 ```bash
 npm run seed            # desde la raíz
 ```
 
 ### 4. Levantar la aplicación
+
 Asegúrate de que **MongoDB esté corriendo** y, en dos terminales, ejecuta:
+
 ```bash
 npm run server          # Terminal 1 → API en http://localhost:4000
 npm run client          # Terminal 2 → UI  en http://localhost:5173
 ```
-El frontend hace *proxy* de `/api` hacia el backend, así que basta con abrir
+
+El frontend hace _proxy_ de `/api` hacia el backend, así que basta con abrir
 **http://localhost:5173**.
 
 Para comprobar que la API responde:
+
 ```bash
 curl http://localhost:4000/api/health    # → {"ok":true,"db":true}
 ```
 
 ### Scripts disponibles (desde la raíz)
-| Comando | Acción |
-|---------|--------|
-| `npm run install:all` | Instala dependencias de `server/` y `client/` |
-| `npm run server` | Inicia el backend (Express) |
-| `npm run client` | Inicia el frontend (Vite) |
-| `npm run seed` | Carga actividades de ejemplo en la base de datos |
+
+| Comando               | Acción                                           |
+| --------------------- | ------------------------------------------------ |
+| `npm run install:all` | Instala dependencias de `server/` y `client/`    |
+| `npm run server`      | Inicia el backend (Express)                      |
+| `npm run client`      | Inicia el frontend (Vite)                        |
+| `npm run seed`        | Carga actividades de ejemplo en la base de datos |
 
 > En Windows, si `npm run dev` (que usa `&`) no funciona, abre dos terminales y
 > ejecuta `npm run server` y `npm run client` por separado.
@@ -253,52 +276,58 @@ Todas las respuestas son JSON. Las rutas devuelven `GET /api/health` →
 `{ "ok": true, "db": true }` para verificar el estado del servicio.
 
 ### Actividades
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/actividades/meta` | Tipos, estados, prioridades, canales y transiciones válidas |
-| GET | `/actividades?estado=&tipo=&prioridad=` | Listar (con filtros) |
-| GET | `/actividades/:id` | Obtener una |
-| POST | `/actividades` | Registrar (usa Factory Method) |
-| PUT | `/actividades/:id` | Actualizar campos |
-| PATCH | `/actividades/:id/estado` | Cambiar estado (State + Observer) |
-| POST | `/actividades/:id/recordar` | Enviar recordatorio por un canal (Strategy) |
-| DELETE | `/actividades/:id` | Eliminar |
+
+| Método | Ruta                                    | Descripción                                                 |
+| ------ | --------------------------------------- | ----------------------------------------------------------- |
+| GET    | `/actividades/meta`                     | Tipos, estados, prioridades, canales y transiciones válidas |
+| GET    | `/actividades?estado=&tipo=&prioridad=` | Listar (con filtros)                                        |
+| GET    | `/actividades/:id`                      | Obtener una                                                 |
+| POST   | `/actividades`                          | Registrar (usa Factory Method)                              |
+| PUT    | `/actividades/:id`                      | Actualizar campos                                           |
+| PATCH  | `/actividades/:id/estado`               | Cambiar estado (State + Observer)                           |
+| POST   | `/actividades/:id/recordar`             | Enviar recordatorio por un canal (Strategy)                 |
+| DELETE | `/actividades/:id`                      | Eliminar                                                    |
 
 ### Alumnos (destinatarios)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/alumnos` | Listar destinatarios |
-| POST | `/alumnos` | Registrar (`{ nombre, correo, activo? }`) |
-| PUT | `/alumnos/:id` | Actualizar (incluye activar/desactivar) |
-| DELETE | `/alumnos/:id` | Eliminar |
+
+| Método | Ruta           | Descripción                               |
+| ------ | -------------- | ----------------------------------------- |
+| GET    | `/alumnos`     | Listar destinatarios                      |
+| POST   | `/alumnos`     | Registrar (`{ nombre, correo, activo? }`) |
+| PUT    | `/alumnos/:id` | Actualizar (incluye activar/desactivar)   |
+| DELETE | `/alumnos/:id` | Eliminar                                  |
 
 ### Notificaciones
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/notificaciones?canal=` | Listar (bitácora, correo, pantalla, interno) |
-| POST | `/notificaciones` | Enviar una notificación (Strategy) |
-| PATCH | `/notificaciones/:id/leida` | Marcar como leída |
+
+| Método | Ruta                        | Descripción                                  |
+| ------ | --------------------------- | -------------------------------------------- |
+| GET    | `/notificaciones?canal=`    | Listar (bitácora, correo, pantalla, interno) |
+| POST   | `/notificaciones`           | Enviar una notificación (Strategy)           |
+| PATCH  | `/notificaciones/:id/leida` | Marcar como leída                            |
 
 ### Reportes
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/reportes/pendientes` | Actividades pendientes |
-| GET | `/reportes/finalizadas` | Actividades finalizadas |
-| GET | `/reportes/prioridad` | Actividades agrupadas por prioridad |
-| GET | `/reportes/resumen` | Conteos por estado |
+
+| Método | Ruta                    | Descripción                         |
+| ------ | ----------------------- | ----------------------------------- |
+| GET    | `/reportes/pendientes`  | Actividades pendientes              |
+| GET    | `/reportes/finalizadas` | Actividades finalizadas             |
+| GET    | `/reportes/prioridad`   | Actividades agrupadas por prioridad |
+| GET    | `/reportes/resumen`     | Conteos por estado                  |
 
 ### Manejo de errores
+
 Los errores se devuelven como JSON `{ "error": "mensaje" }` con el código HTTP adecuado:
 
-| Código | Caso |
-|--------|------|
-| `400` | Datos inválidos, `id` mal formado o transición de estado no permitida (patrón State) |
-| `404` | Recurso o ruta no encontrada |
-| `500` | Error interno del servidor |
+| Código | Caso                                                                                 |
+| ------ | ------------------------------------------------------------------------------------ |
+| `400`  | Datos inválidos, `id` mal formado o transición de estado no permitida (patrón State) |
+| `404`  | Recurso o ruta no encontrada                                                         |
+| `500`  | Error interno del servidor                                                           |
 
 ---
 
 ## Documentación adicional
+
 Sigue los pasos planteados originalmente para el proyecto:
 
 1. **Leer el documento del proyecto** → requisitos extraídos del PDF.
